@@ -1,6 +1,6 @@
 # team name:- code canvas
-project title and description:- Design an intelligent traffic signal optimization algorithm that uses machine learning techniques to dynamically adjust signal timings based on traffic flow patterns, congestion levels, and time of day, with the goal of reducing wait times and improving overall traffic flow.
-key features:-Improved Traffic Flow:
+#project title and description:- Design an intelligent traffic signal optimization algorithm that uses machine learning techniques to dynamically adjust signal timings based on traffic flow patterns, congestion levels, and time of day, with the goal of reducing wait times and improving overall traffic flow.
+#key features:-Improved Traffic Flow:
 The dynamic adjustment of signal timings reduces congestion, particularly during peak hours, ensuring smoother traffic flow. This leads to reduced travel 
 times for commuters.
 Reduced Vehicle Wait Times:
@@ -18,4 +18,4 @@ Though initial implementation might require investment in sensors and infrastruc
 provide significant value
 
 
-technologies used:- machine learning , python, yolo, javascript , html, css, tensorflow, darkflow ,and other python libraries.
+#technologies used:- machine learning , python, yolo, javascript , html, css, tensorflow, darkflow ,and other python libraries.
