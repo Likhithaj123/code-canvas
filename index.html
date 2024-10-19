@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traffic Simulation Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            background-color: white;
+            display: none; /* Initially hide the dashboard */
+        }
+        .dashboard-title {
+            font-size: 2.5rem;
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .status-alert {
+            background-color: #fef6e4;
+            border: 1px solid #f4d03f;
+            color: #7f5f01;
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1.5rem;
+        }
+        .info-card, .lane-card, .login-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+            transition: transform 0.3s;
+        }
+        .info-card:hover, .lane-card:hover, .login-card:hover {
+            transform: translateY(-5px);
+        }
+        .info-title, .lane-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .signal-green { color: #2ecc71; }
+        .signal-yellow { color: #f1c40f; }
+        .signal-red { color: #e74c3c; }
+        .chart-container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 1rem;
+            margin-top: 2rem;
+        }
+        .chart-title {
+            color: #2c3e50;
+            border-bottom: 2px solid #9b59b6;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1rem;
+        }
+        .login-card {
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 400px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+        }
+        .login-input {
+            width: 100%;
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+        }
+        .login-button {
+            background-color: #3498db;
+            color: white;
+            padding: 0.75rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+        .login-button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card" id="loginCard">
+        <h2 class="info-title">Login</h2>
+        <input type="text" id="username" class="login-input" placeholder="Username" required>
+        <input type="password" id="password" class="login-input" placeholder="Password" required>
+        <button class="login-button" onclick="handleLogin()">Login</button>
+        <div id="loginStatus" class="status-alert" style="display:none;"></div>
+    </div>
+
+    <div class="dashboard-container" id="dashboard">
+        <h1 class="dashboard-title">Traffic Simulation Dashboard</h1>
+        <div id="status" class="status-alert" role="alert">
+            <strong>Status:</strong>
+            <span id="statusInfo">Waiting for simulation data...</span>
+        </div>
+
+        <div class="grid">
+            <div class="info-card">
+                <h2 class="info-title">Simulation Info</h2>
+                <p id="timeElapsed">Time Elapsed: 0 seconds</p>
+            </div>
+            <div class="info-card">
+                <h2 class="info-title">Total Vehicle Count</h2>
+                <p id="totalVehicles">Total Vehicles: 0</p>
+            </div>
+        </div>
+        <div id="laneData" class="grid mt-6">
+            <!-- Lane data will be inserted here dynamically -->
+        </div>
+        <div class="chart-container">
+            <h2 class="chart-title">Vehicle Count per Lane</h2>
+            <canvas id="vehicleChart"></canvas>
+        </div>
+    </div>
+
+    <script>
+        let chart;
+        let lastData = null;
+
+        // Dummy initial data
+        const initialData = {
+            time: 30,
+            lanes: [
+                { vehicle_count: 10, queue_length: 2, signal: 'GREEN' },
+                { vehicle_count: 5, queue_length: 1, signal: 'YELLOW' },
+                { vehicle_count: 8, queue_length: 3, signal: 'RED' },
+                { vehicle_count: 12, queue_length: 0, signal: 'GREEN' },
+            ]
+        };
+
+        function showStatus(message) {
+            document.getElementById('statusInfo').textContent = message;
+        }
+
+        function handleLogin() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            // Dummy login validation
+            if (username === "user" && password === "pass") {
+                showStatus("Login successful!");
+                document.getElementById('loginCard').style.display = 'none'; // Hide login card
+                document.getElementById('dashboard').style.display = 'block'; // Show dashboard
+                fetchData();
+            } else {
+                const loginStatus = document.getElementById('loginStatus');
+                loginStatus.style.display = 'block';
+                loginStatus.textContent = "Invalid username or password.";
+            }
+        }
+
+        function fetchData() {
+            // Simulating a fetch request
+            setTimeout(() => {
+                const data = initialData; // Replace with actual fetch call
+                updateDashboard(data);
+            }, 1000);
+        }
+
+        function updateDashboard(data) {
+            document.getElementById('timeElapsed').textContent = `Time Elapsed: ${data.time} seconds`;
+            document.getElementById('totalVehicles').textContent = `Total Vehicles: ${data.lanes.reduce((sum, lane) => sum + lane.vehicle_count, 0)}`;
+
+            const laneDataDiv = document.getElementById('laneData');
+            laneDataDiv.innerHTML = ''; // Clear previous lane data
+            data.lanes.forEach((lane, index) => {
+                const laneCard = document.createElement('div');
+                laneCard.className = 'lane-card';
+                laneCard.innerHTML = `
+                    <h2 class="lane-title">Lane ${index + 1}</h2>
+                    <p>Vehicle Count: ${lane.vehicle_count}</p>
+                    <p>Queue Length: ${lane.queue_length}</p>
+                    <p class="signal-${lane.signal.toLowerCase()}">Signal: ${lane.signal}</p>
+                `;
+                laneDataDiv.appendChild(laneCard);
+            });
+
+            // Update Chart
+            const chartData = {
+                labels: data.lanes.map((_, index) => `Lane ${index + 1}`),
+                datasets: [{
+                    label: 'Vehicle Count',
+                    data: data.lanes.map(lane => lane.vehicle_count),
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                }],
+            };
+
+            if (chart) {
+                chart.data = chartData;
+                chart.update();
+            } else {
+                const ctx = document.getElementById('vehicleChart').getContext('2d');
+                chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: chartData,
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: { stacked: true },
+                            y: { stacked: true },
+                        },
+                    },
+                });
+            }
+        }
+
+        // Initial fetch and set interval
+        fetchData();
+        setInterval(fetchData, 10000); // Adjust as needed
+    </script>
+</body>
